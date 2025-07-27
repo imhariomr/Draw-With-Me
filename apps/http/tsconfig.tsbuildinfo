@@ -1,0 +1,1 @@
+{"root":["./src/index.ts","./src/controller/shape.controller.ts","./src/routes/shape.route.ts","./src/util/create-shape.ts","./src/validation/shape.validation.ts"],"version":"5.8.3"}
