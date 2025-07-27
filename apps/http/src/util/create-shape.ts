@@ -7,7 +7,7 @@ export const createShape = async (payload: any) => {
     console.log("parsedData",parsedData);
     throw new Error(parsedData.error.issues[0]?.message || "Invalid shape data");
   }
-  const { type, X, y, drawX, drawY, radius, slug } = parsedData.data;
+  const { type, X, y, drawX, drawY, radius, slug,lineX,lineY } = parsedData.data;
 
   const shapeData: any = {
     type,
@@ -21,7 +21,10 @@ export const createShape = async (payload: any) => {
     shapeData.drawY = drawY;
   } else if (type === "circle") {
     shapeData.radius = radius;
-  } else {
+  } else if(type==='line'){
+    shapeData.lineX = lineX;
+    shapeData.lineY = lineY
+  }else {
     throw new Error("Unsupported shape type");
   }
 

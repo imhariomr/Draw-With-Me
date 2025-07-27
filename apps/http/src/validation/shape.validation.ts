@@ -14,12 +14,14 @@ const shapeTypeSchema = z.union([
 ])
 
 export const shapeValidator = z.object({
-    type: z.enum(['rectangle', 'circle']),
+    type: z.enum(['rectangle', 'circle','line']),
     X: z.number(),
     y: z.number(),
     slug: z.string(),
     drawX: z.number().optional(),
     drawY: z.number().optional(),
+    lineX: z.number().optional(),
+    lineY: z.number().optional(),
     radius: z.number().optional(),
 });
 

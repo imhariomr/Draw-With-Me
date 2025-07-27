@@ -1,6 +1,6 @@
 interface baseShape {
     id: number;
-    type: 'rectangle' | 'circle';
+    type: 'rectangle' | 'circle' | 'line';
     X: number;
     y: number;
     slug?: string;
@@ -11,13 +11,19 @@ interface baseShape {
     drawX: number;
     drawY: number;
   }
+
+  interface lineShape extends baseShape {
+    type: 'line';
+    lineX: number;
+    lineY: number;
+  }
   
   interface CircleShape extends baseShape {
     type: 'circle';
     radius: number;
   }
   
-  export type Shape = RectangleShape | CircleShape;
+  export type Shape = RectangleShape | CircleShape | lineShape;
   
   export class initDraw {
     private canvas: HTMLCanvasElement;
@@ -56,7 +62,7 @@ interface baseShape {
         this.socketRef.onmessage = (event: MessageEvent) => {
           try {
             const data = JSON.parse(event.data);
-            if (data?.type === 'rectangle' || data?.type === 'circle') {
+            if (data?.type === 'rectangle' || data?.type === 'circle' || data?.type==='line') {
               this.shapes.push(data);
               this.renderShapes(this.shapes);
             } else if (data?.type === 'shapeDeleted') {
@@ -223,6 +229,28 @@ interface baseShape {
             })
           );
         }
+      } else if(this.selectedShape === 'line'){
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.startX, this.startY);
+        this.ctx.lineTo(this.startX + this.drawX, this.startY + this.drawY);
+        this.ctx.stroke();
+        let lineShape: lineShape = {
+            id: this.id++,
+            type: 'line',
+            X: this.startX,
+            y: this.startY,
+            lineX: this.startX + this.drawX,
+            lineY:this.startY + this.drawY
+          };
+        if (this.socketRef?.readyState === WebSocket.OPEN) {
+            lineShape = { ...lineShape, slug: this.roomSlug };
+            this.socketRef.send(
+              JSON.stringify({
+                type: 'drawShape',
+                payload: lineShape,
+              })
+            );
+          }
       }
     }
   
@@ -284,6 +312,11 @@ interface baseShape {
           this.ctx.strokeStyle = 'white';
           this.ctx.arc(shape?.X, shape?.y, shape?.radius, 0, Math.PI * 2);
           this.ctx.stroke();
+        }else if(shape?.type === 'line'){
+            this.ctx.beginPath();
+            this.ctx.moveTo(shape.X, shape.y);
+            this.ctx.lineTo(shape.lineX, shape.lineY);
+            this.ctx.stroke();
         }
       }
     }
@@ -306,7 +339,14 @@ interface baseShape {
           if (dist <= shape.radius) {
             return shape;
           }
-        }
+        }else if (shape.type === 'line') {
+            const dist = this.pointToLineDistance(
+              { x: shape.X, y: shape.y },
+              { x: shape.lineX, y: shape.lineY },
+              { x: mouseX, y: mouseY }
+            );
+            if (dist <= 5) return shape; 
+          }
       }
     }
   
@@ -314,5 +354,31 @@ interface baseShape {
       this.ctx.fillStyle = 'black';
       this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
+
+    private pointToLineDistance(p1: any, p2: any, p: any): number {
+        const A = p.x - p1.x;
+        const B = p.y - p1.y;
+        const C = p2.x - p1.x;
+        const D = p2.y - p1.y;
+        const dot = A * C + B * D;
+        const lenSq = C * C + D * D;
+        let param = -1;
+        if (lenSq !== 0) param = dot / lenSq;
+        let xx, yy;
+        if (param < 0) {
+            xx = p1.x;
+            yy = p1.y;
+        } else if (param > 1) {
+            xx = p2.x;
+            yy = p2.y;
+        } else {
+            xx = p1.x + param * C;
+            yy = p1.y + param * D;
+        }
+        const dx = p.x - xx;
+        const dy = p.y - yy;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+    
   }
   

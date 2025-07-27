@@ -9,6 +9,7 @@ import ShapeSelector from "../../../components/tool";
 
 export default function Canvas(){
     const params = useParams();
+    let slug = params?.id;
     const {getToken} = useAuth();
     const webSocketapi = process.env.NEXT_PUBLIC_WEB_SOCKET_SERVER;
     const canvasRef = useRef<HTMLCanvasElement>(null);

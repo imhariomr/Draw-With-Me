@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Shape" ADD COLUMN     "lineX" DOUBLE PRECISION,
+ADD COLUMN     "lineY" DOUBLE PRECISION;

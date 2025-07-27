@@ -28,6 +28,8 @@ model Shape {
   y         Float    
   drawX     Float?
   drawY    Float?
+  lineX     Float?
+  lineY     Float?
   radius    Float?   
   color     String?
   slug      String
